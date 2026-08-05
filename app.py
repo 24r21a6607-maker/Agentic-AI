@@ -123,7 +123,7 @@ tools = [get_weather, search_movies, change__to_f]
 
 # Retrieve the key from the OS environment instead of Colab's userdata
 
-GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
+GOOGLE_API_KEY = os.environ.get("GOOGLE_APIKEY")
 
 
 
@@ -230,11 +230,19 @@ formatted_agent_chain = (
 # --- 3. FastAPI App ---
 
 ##Need To Code
+# --- 3. FastAPI App ---
 
+app = FastAPI(title="Indian Weather & Cinema Agent")
 
+add_routes(
+    app,
+    formatted_agent_chain,
+    path="/agent"
+)
 
 if __name__ == "__main__":
-
     port = int(os.environ.get("PORT", 8000))
-
     uvicorn.run(app, host="0.0.0.0", port=port)
+
+
+
