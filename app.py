@@ -2,7 +2,6 @@ import os
 import json
 import requests
 import uvicorn
-
 from fastapi import FastAPI
 from langserve import add_routes
 from langchain_core.tools import tool
@@ -10,7 +9,6 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.agents import create_agent
 from pydantic import BaseModel, Field
 from langchain_core.runnables import RunnableLambda
-
 
 # --- 1. Define Tools ---
 @tool
@@ -23,12 +21,10 @@ def search_movies(genre: str) -> str:
     }
     return movies.get(genre.lower(), "No movies found for that genre")
 
-
 @tool
 def change__to_f(temp_c: float) -> float:
     """Converts Celsius temperature to Fahrenheit."""
     return temp_c * 1.8 + 32
-
 
 @tool
 def get_weather(city: str) -> str:
@@ -38,11 +34,9 @@ def get_weather(city: str) -> str:
     geo_response = requests.get(geo_url, params=geo_params).json()
     if "results" not in geo_response:
         return f"Could not find weather data for city: {city}"
-
     location = geo_response["results"][0]
     latitude = location["latitude"]
     longitude = location["longitude"]
-
     weather_url = "https://api.open-meteo.com/v1/forecast"
     weather_params = {
         "latitude": latitude,
@@ -51,7 +45,6 @@ def get_weather(city: str) -> str:
         "temperature_unit": "celsius"
     }
     weather_response = requests.get(weather_url, params=weather_params).json()["current"]
-
     result = {
         "resolved_city": location["name"],
         "temperature_celsius": weather_response["temperature_2m"],
@@ -59,18 +52,15 @@ def get_weather(city: str) -> str:
     }
     return json.dumps(result)
 
-
 tools = [get_weather, search_movies, change__to_f]
 
 # --- 2. Initialize Model & Agent ---
 GOOGLE_API_KEY = os.environ.get("GOOGLE_APIKEY")
-
 llm_flash = ChatGoogleGenerativeAI(
-    model="gemini-3.6-flash",   # <-- fixed: was an invalid model name
+    model="gemini-3.6-flash",
     api_key=GOOGLE_API_KEY,
     temperature=0
 )
-
 agent = create_agent(
     model=llm_flash,
     tools=tools,
@@ -81,34 +71,36 @@ agent = create_agent(
     )
 )
 
-
 class AgentInput(BaseModel):
     input: str = Field(description="Your message to the agent")
-
 
 def format_for_agent(x) -> dict:
     user_input = x["input"] if isinstance(x, dict) else x.input
     return {"messages": [("user", user_input)]}
 
-
 def extract_text_response(agent_output: dict) -> str:
     if not isinstance(agent_output, dict):
         return str(agent_output)
-
     messages = agent_output.get("messages")
-
     if messages is None:
         for value in agent_output.values():
             if isinstance(value, dict) and "messages" in value:
                 messages = value["messages"]
                 break
-
     if messages:
         last = messages[-1]
-        return getattr(last, "content", str(last))
-
+        content = getattr(last, "content", last)
+        # Gemini can return content as a list of blocks instead of a plain string
+        if isinstance(content, list):
+            text_parts = []
+            for block in content:
+                if isinstance(block, dict) and block.get("type") == "text":
+                    text_parts.append(block.get("text", ""))
+                elif isinstance(block, str):
+                    text_parts.append(block)
+            return "".join(text_parts) if text_parts else str(content)
+        return str(content)
     return str(agent_output)
-
 
 formatted_agent_chain = (
     RunnableLambda(format_for_agent)
@@ -118,11 +110,10 @@ formatted_agent_chain = (
 
 # --- 3. FastAPI App ---
 app = FastAPI(title="Indian Weather & Cinema Agent")
-
 add_routes(
     app,
     formatted_agent_chain,
-    path="/Placements-ready-ai-agent"
+    path="/agent"
 )
 
 if __name__ == "__main__":
