@@ -122,7 +122,7 @@ app = FastAPI(title="Indian Weather & Cinema Agent")
 add_routes(
     app,
     formatted_agent_chain,
-    path="/agent"
+    path="/Placements-ready-ai-agent"
 )
 
 if __name__ == "__main__":
