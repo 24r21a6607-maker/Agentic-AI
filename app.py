@@ -66,7 +66,7 @@ tools = [get_weather, search_movies, change__to_f]
 GOOGLE_API_KEY = os.environ.get("GOOGLE_APIKEY")
 
 llm_flash = ChatGoogleGenerativeAI(
-    model="gemini-2.0-flash",   # <-- fixed: was an invalid model name
+    model="gemini-3.6-flash",   # <-- fixed: was an invalid model name
     api_key=GOOGLE_API_KEY,
     temperature=0
 )
