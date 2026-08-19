@@ -124,7 +124,7 @@ tools = [get_weather, search_movies, change__to_f]
 
 # Retrieve the key from the OS environment instead of Colab's userdata
 
-GOOGLE_API_KEY = os.environ.get("GOOGLE_APIKEY")
+GOOGLE_APIKEY = os.environ.get("GOOGLE_APIKEY")
 
 
 
