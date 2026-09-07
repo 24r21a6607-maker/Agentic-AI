@@ -3,7 +3,6 @@ uvicorn
 requests
 pydantic<3
 langchain
-langchain-classic
 langchain-core
 langchain-google-genai
 langserve[all]
