@@ -59,7 +59,7 @@ def get_weather(city: str) -> str:
 tools = [get_weather, search_movies, change__to_f]
 
 # --- 2. Initialize Model & Agent ---
-api_key = os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY")
+api_key = os.environ.get("GOOGLE_API_KEY") or os.environ.get("GOOGLE_APIKEY")
 
 llm_flash = ChatGoogleGenerativeAI(
     model="gemini-1.5-flash",
@@ -76,7 +76,6 @@ prompt = ChatPromptTemplate.from_messages([
     MessagesPlaceholder(variable_name="agent_scratchpad"),
 ])
 
-# Create tool-calling agent and wrap in AgentExecutor
 agent_runnable = create_tool_calling_agent(llm_flash, tools, prompt)
 agent = AgentExecutor(agent=agent_runnable, tools=tools)
 
