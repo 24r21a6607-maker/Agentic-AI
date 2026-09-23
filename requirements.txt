@@ -1,9 +1,2 @@
-fastapi
-uvicorn
-requests
-pydantic<3
-langchain
-langchain-core
-langchain-google-genai
-langserve[all]
-sse-starlette
+openai
+gradio
